@@ -12,7 +12,7 @@ add_library(${PROJECT_NAME}_lib SHARED async.cpp async.h bulkhandler.cpp bulkhan
 add_executable(${PROJECT_NAME} main.cpp)
 
 #поиск пакетов-зависимостей
-find_package(Boost COMPONENTS system asio REQUIRED)
+find_package(Boost COMPONENTS system REQUIRED)
 
 #линковка
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_lib ${Boost_LIBRARIES})
