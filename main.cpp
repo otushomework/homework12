@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include "config.h"
 
 //https://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio/example/echo/async_tcp_echo_server.cpp
 
@@ -14,11 +15,17 @@ public:
     BulkSession(boost::asio::io_service& io_service, std::size_t bulkSize)
         : m_socket(io_service)
     {
+#ifdef _DEBUG
+        std::cout << "BulkSession " << this << std::endl;
+#endif
         m_asyncHandler = async::connect(bulkSize);
     }
 
     ~BulkSession()
     {
+#ifdef _DEBUG
+        std::cout << "~BulkSession " << this << std::endl;
+#endif
         async::disconnect(m_asyncHandler);
     }
 
@@ -41,20 +48,22 @@ public:
         if (!error)
         {
             async::receive(m_asyncHandler, m_data, bytes_transferred);
-            //todo
-            //            boost::asio::async_write(m_socket,
-            //                                     boost::asio::buffer(m_data, bytes_transferred),
-            //                                     boost::bind(&session::handle_write, this,
-            //                                                 boost::asio::placeholders::error));
+            close();
         }
         else
         {
-            delete this;
+            close();
         }
     }
+
+    void close()
+    {
+        delete this;
+    }
+
 private:
     tcp::socket m_socket;
-    enum { max_length = 1024 };
+    enum { max_length = (1024 * 5) };
     char m_data[max_length];
     async::handle_t m_asyncHandler;
 };
@@ -96,6 +105,8 @@ private:
     std::size_t m_bulkSize;
 };
 
+//bulk_server 9000 3
+//seq 0 999 | nc localhost 9000
 int main(int argc, char * argv[]) {
     try
     {

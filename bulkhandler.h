@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <algorithm>
+#include <mutex>
+#include <condition_variable>
 
 class Parser
 {
@@ -133,14 +135,21 @@ public:
 
     void write(std::list<std::string> commands)
     {
+        static int conflictResolverCounter = 0;
+        static std::mutex conflictMutex;
+
         std::ofstream logFile;
 
         std::time_t result = std::time(nullptr);
         char buff[FILENAME_MAX];
         getcwd(buff, FILENAME_MAX );
         std::string current_working_dir(buff);
-        logFile.open (std::string(current_working_dir + "/bulk" + std::to_string(result) + ".log"));
-        std::cout << std::string(current_working_dir + "/bulk" + std::to_string(result) + ".log") << std::endl;
+        {
+            std::lock_guard<std::mutex> lk(conflictMutex);
+            logFile.open (std::string(current_working_dir + "/bulk" + std::to_string(result) + "_" + std::to_string(conflictResolverCounter) + ".log"));
+            std::cout << std::string(current_working_dir + "/bulk" + std::to_string(result) + "_" + std::to_string(conflictResolverCounter) + ".log") << std::endl;
+            conflictResolverCounter++;
+        }
         logFile << "bulk:";
         for (auto command : commands)
             logFile << command << " ";
