@@ -10,7 +10,8 @@
 
 using boost::asio::ip::tcp;
 
-class BulkSession {
+class BulkSession
+{
 public:
     BulkSession(boost::asio::io_service& io_service, std::size_t bulkSize)
         : m_socket(io_service)
@@ -48,7 +49,7 @@ public:
         if (!error)
         {
             async::receive(m_asyncHandler, m_data, bytes_transferred);
-            close();
+            //close();
         }
         else
         {
@@ -105,8 +106,9 @@ private:
     std::size_t m_bulkSize;
 };
 
+//sudo apt-get install netcat-traditional
 //bulk_server 9000 3
-//seq 0 999 | nc localhost 9000
+//seq 0 999 | nc -q 0 localhost 9000
 int main(int argc, char * argv[]) {
     try
     {
